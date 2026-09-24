@@ -30,18 +30,72 @@ in
 
   home.username = user;
   home.homeDirectory = "/home/${user}";
-
-  # The Home Manager release this config was first written against.
-  # Don't bump it when upgrading nixpkgs; it only controls stateful defaults.
   home.stateVersion = "26.05";
+  programs.home-manager.enable = true;
 
   home.packages = with pkgs; [
-    wezterm
-    ripgrep
+    wezterm # default terminal
+    ripgrep # fast search
+    fd      # fast find
+    jq      # json on the command line
+    lazygit
+    neovim
+    nerd-fonts.hack
   ];
 
-  # Lets Home Manager install and manage itself, so `home-manager` is on PATH.
-  programs.home-manager.enable = true;
+  programs.bash ={
+    enable = true;
+    enableCompletion = true;
+    historySize = 50000;
+    historyFileSize = 1000000;
+    historyControl = ["ignoredups" "erasedups"];
+    shellOptions = ["histappend" "checkwinsize" "globstar"];
+
+    shellAliases = {
+      ".." = "cd ..";
+      ll = "ls -alF";
+      la = "ls -A";
+      l = "ls -CF";
+      k = "kubectl";
+      add = "git add .";
+      push = "git push";
+      pull = "git pull";
+      m = "git switch main";
+      cc = "claude --dangerously-skip-permissions";
+    };
+
+    initExtra = ''
+      # conda (installed separately in ~/miniconda3, not managed by Nix)
+      __conda_setup="$("$HOME/miniconda3/bin/conda" 'shell.bash' 'hook' 2> /dev/null)"
+      if [ $? -eq 0 ]; then
+          eval "$__conda_setup"
+      elif [ -f "$HOME/miniconda3/etc/profile.d/conda.sh" ]; then
+          . "$HOME/miniconda3/etc/profile.d/conda.sh"
+      else
+          export PATH="$HOME/miniconda3/bin:$PATH"
+      fi
+      unset __conda_setup
+
+      # ble.sh: autosuggestions and syntax highlighting
+      source ${pkgs.blesh}/share/blesh/ble.sh
+      # Ctrl+F (or Right / End) accepts the grey suggestion - ble.sh's default
+
+      eval "$(uv generate-shell-completion bash)"
+    '';
+  };
+
+  programs.uv = {
+    enable = true;
+    settings = {
+      python-preference = "managed";
+    };
+  };
+
+  home.sessionPath = ["$HOME/.local/bin"];
+  programs.starship.enable = true;
+  programs.fzf.enable = true;
+  fonts.fontconfig.enable = true;
+  home.sessionVariables.EDITOR = "nvim";
 
   home.file.".config/wezterm".source = config.lib.file.mkOutOfStoreSymlink "${dotfiles}/home/.config/wezterm";
 }
