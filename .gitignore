@@ -1,2 +1,6 @@
 result
 result-*
+
+# herdr runtime state (logs, sockets, sessions, release notes); only the config is tracked
+/home/.config/herdr/*
+!/home/.config/herdr/config.toml

@@ -1,4 +1,4 @@
-{ config, lib, pkgs, user, ... }:
+{ config, lib, pkgs, user, herdr, ... }:
 
 let
   dotfiles = "${config.home.homeDirectory}/.dotfiles";
@@ -44,6 +44,7 @@ in
     lazygit
     neovim
     nerd-fonts.hack
+    herdr.packages.${pkgs.stdenv.hostPlatform.system}.default
   ];
 
   programs.bash ={
@@ -113,4 +114,5 @@ in
 
   home.file.".config/wezterm".source = config.lib.file.mkOutOfStoreSymlink "${dotfiles}/home/.config/wezterm";
   home.file.".config/nvim".source = config.lib.file.mkOutOfStoreSymlink "${dotfiles}/home/.config/nvim";
+  home.file.".config/herdr".source = config.lib.file.mkOutOfStoreSymlink "${dotfiles}/home/.config/herdr";
 }

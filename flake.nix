@@ -7,9 +7,10 @@
       url = "github:nix-community/home-manager/release-26.05";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    herdr.url = "github:herdrdev/herdr";
   };
 
-  outputs = { nixpkgs, home-manager, ... }:
+  outputs = { nixpkgs, home-manager, herdr, ... }:
     let
       system = "x86_64-linux";
       user = "bhanu";
@@ -21,7 +22,7 @@
     {
       homeConfigurations.${user} = home-manager.lib.homeManagerConfiguration {
         inherit pkgs;
-        extraSpecialArgs = { inherit user; };
+        extraSpecialArgs = { inherit user; inherit herdr; };
         modules = [
           ./home-manager/home.nix
         ];
