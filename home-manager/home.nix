@@ -33,7 +33,7 @@ in
         # Ubuntu's defaults: this list replaces the current one, so keep these
         "ding@rastersoft.com"
         "ubuntu-dock@ubuntu.com"
-        "tiling.assistant@ubuntu.com"
+        "tiling-assistant@ubuntu.com"
         "blur-my-shell@aunetx"
       ];
     };
