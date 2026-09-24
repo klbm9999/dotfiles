@@ -1,4 +1,6 @@
 ### Setting up
+Install git
+
 Start by installing determinate nix
 `curl -fsSL https://install.determinate.systems/nix | sh -s -- install`
 
