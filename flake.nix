@@ -13,12 +13,14 @@
     let
       system = "x86_64-linux";
       user = "bhanu";
-      pkgs = nixpkgs.legacyPackages.${system};
+      pkgs = import nixpkgs {
+        inherit system;
+        config.allowUnfree = true;
+      };
     in
     {
       homeConfigurations.${user} = home-manager.lib.homeManagerConfiguration {
         inherit pkgs;
-        # Makes `user` available as a module argument in home.nix.
         extraSpecialArgs = { inherit user; };
         modules = [
           ./home-manager/home.nix
