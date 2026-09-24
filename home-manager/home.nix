@@ -46,6 +46,25 @@ in
       dynamic-opacity = false;                  # stay see-through when focused
       sigma = 30;                               # blur strength (default)
     };
+
+    "org/gnome/settings-daemon/plugins/media-keys" = {
+      terminal = [ ];
+      custom-keybindings = [
+        "/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom0/"
+      ];
+    };
+
+    "org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom0" = {
+      name = "WezTerm";
+      command = "${pkgs.wezterm}/bin/wezterm";   # full path: GNOME's PATH doesn't include ~/.nix-profile
+      binding = "<Control><Alt>t";
+    };
+  };
+  
+  xdg.configFile = {
+    "xdg-terminals.list".text = "org.wezfurlong.wezterm.desktop\n";
+    "ubuntu-xdg-terminals.list".text = "org.wezfurlong.wezterm.desktop\n";
+    "GNOME-xdg-terminals.list".text = "org.wezfurlong.wezterm.desktop\n";
   };
 
   home.username = user;
@@ -69,7 +88,7 @@ in
     gnomeExtensions.blur-my-shell
   ];
 
-  programs.bash ={
+  programs.bash = {
     enable = true;
     enableCompletion = true;
     historySize = 50000;
