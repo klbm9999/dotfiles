@@ -1,4 +1,4 @@
-{ config, lib, pkgs, user, herdr, ... }:
+{ config, lib, pkgs, pkgs-unstable, user, herdr, ... }:
 
 let
   dotfiles = "${config.home.homeDirectory}/.dotfiles";
@@ -26,6 +26,26 @@ in
     "org/gnome/desktop/peripherals/touchpad".tap-to-click = true;
     "org/gnome/nautilus/preferences".default-folder-viewer = "list-view";
     "org/gnome/shell/extensions/ding".show-home = false;
+
+    "org/gnome/shell" = {
+      disable-user-extensions = false;
+      enabled-extensions = [
+        # Ubuntu's defaults: this list replaces the current one, so keep these
+        "ding@rastersoft.com"
+        "ubuntu-dock@ubuntu.com"
+        "tiling.assistant@ubuntu.com"
+        "blur-my-shell@aunetx"
+      ];
+    };
+
+    "org/gnome/shell/extensions/blur-my-shell/applications" = {
+      blur = true;
+      enable-all = false;                       # only the apps in the whitelist
+      whitelist = ["org.wezfurlong.wezterm"];   
+      opacity = 230;                            # window opacity, 0-255 (default 215)
+      dynamic-opacity = false;                  # stay see-through when focused
+      sigma = 30;                               # blur strength (default)
+    };
   };
 
   home.username = user;
@@ -46,6 +66,7 @@ in
     nerd-fonts.hack
     herdr.packages.${pkgs.stdenv.hostPlatform.system}.default
     pkgs-unstable.cursor-cli
+    gnomeExtensions.blur-my-shell
   ];
 
   programs.bash ={

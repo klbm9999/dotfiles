@@ -19,7 +19,7 @@
         inherit system;
         config.allowUnfree = true;
       };
-      pkgs-unstable = import nixpkgs-unstable { inherit system; config.allowUnfree = true; }
+      pkgs-unstable = import nixpkgs-unstable { inherit system; config.allowUnfree = true; };
     in
     {
       homeConfigurations.${user} = home-manager.lib.homeManagerConfiguration {
