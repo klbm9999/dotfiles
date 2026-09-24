@@ -21,8 +21,22 @@ Running the switch builds:
 
 ## Prerequisites
 
-- Ubuntu with GNOME on x86_64 (tested on Ubuntu 24.04, GNOME 46).
-- `sudo` access, for installing Nix and the GPU driver link.
+- Ubuntu on x86_64 (tested on Ubuntu 24.04, GNOME 46).
+- `sudo` access, for installing Nix and (on a desktop) the GPU driver link.
+
+## Desktop and server profiles
+
+The config comes in two profiles, and `rebuild.sh` picks one automatically:
+
+- **desktop** (`common.nix` + `desktop.nix`) - used when GNOME is installed.
+  Adds WezTerm, fonts, GNOME settings, Blur my Shell, and GPU drivers.
+- **server** (`common.nix` only) - used everywhere else, like a machine you only reach over SSH.
+  You get the same shell, CLI tools, Neovim, and agent configs; the look comes from your local terminal.
+
+Force one with `DOTFILES_PROFILE=desktop ./rebuild.sh` or `DOTFILES_PROFILE=server ./rebuild.sh`.
+
+Over SSH, Neovim copies to your local clipboard with OSC 52, which WezTerm supports.
+Paste text copied elsewhere with your terminal's paste shortcut.
 
 ## Fresh-machine setup
 
@@ -43,13 +57,13 @@ Before you run it, review "Make it yours" below.
 1. Installs `curl` and `git` with apt, if they're missing.
 2. Installs Determinate Nix, if it isn't already installed.
 3. Symlinks this repo to `~/.dotfiles`.
-   This has to happen before the first switch, because `home.nix` points at config files through `~/.dotfiles`.
+   This has to happen before the first switch, because the Home Manager modules point at config files through `~/.dotfiles`.
 4. Checks the `user` configured in `flake.nix` against your actual username, and offers to fix it for you if they differ.
-5. Runs the first `home-manager switch`, using the Home Manager revision pinned in `flake.lock`.
+5. Runs the first switch through `rebuild.sh`, which picks the desktop or server profile and uses the Home Manager revision pinned in `flake.lock`.
    Existing files in the way (like Ubuntu's default `.bashrc` and `.profile`) are renamed to `*.backup`.
-6. Runs `non-nixos-gpu-setup` with sudo, so Nix GUI apps like WezTerm can use the GPU.
+6. On a desktop, runs `non-nixos-gpu-setup` with sudo, so Nix GUI apps like WezTerm can use the GPU.
 
-Log out and back in afterwards, so GNOME picks up the new extensions and settings.
+On a desktop, log out and back in afterwards, so GNOME picks up the new extensions and settings.
 After that, `home-manager` exists and you're on the normal workflow below.
 
 ### Validate without applying
@@ -57,7 +71,8 @@ After that, `home-manager` exists and you're on the normal workflow below.
 Once Nix is installed, you can check that the config builds without touching your home directory:
 
 ```sh
-home-manager build --flake .
+home-manager build --flake .#bhanu-desktop
+home-manager build --flake .#bhanu-server
 ```
 
 ## Daily use
@@ -85,17 +100,17 @@ If you clone it, review these before you run `bootstrap.sh`:
 
 - **Username**: run `./bootstrap.sh` (it detects your username and offers to set it), or change the single `user = "bhanu"` line in `flake.nix`.
   The Home Manager config name, username, and home directory are all derived from that one variable.
-- **rebuild.sh**: it switches to `#bhanu`, so change that to your username too.
-- **GNOME extensions**: `home.nix` sets `enabled-extensions`, which replaces the whole list.
+  `rebuild.sh` reads the username from that same line, so nothing else needs changing.
+- **GNOME extensions**: `desktop.nix` sets `enabled-extensions`, which replaces the whole list.
   Keep Ubuntu's defaults (`ding`, `ubuntu-dock`, `tiling-assistant`) in it, or they get disabled.
 - **Conda**: `.bashrc` loads conda from `~/miniconda3` if it exists; Nix doesn't install it.
 
 **Git identity:** this config does not set your git name or email.
-Set them with `git config --global user.name` and `git config --global user.email`, or add a `programs.git` block to `home.nix`.
+Set them with `git config --global user.name` and `git config --global user.email`, or add a `programs.git` block to `common.nix`.
 
 **Heads-up:**
 
-- `home/AGENTS.md` is my personal agent policy, and `home.nix` installs it for Claude Code and Cursor.
+- `home/AGENTS.md` is my personal agent policy, and `common.nix` installs it for Claude Code and Cursor.
   Edit or delete it if you don't want to inherit my instructions.
 - `home/.claude/settings.json` is my Claude Code settings, including hooks and plugins.
 - The `cc` alias is `claude --dangerously-skip-permissions`.
@@ -104,8 +119,9 @@ Set them with `git config --global user.name` and `git config --global user.emai
 ## Repo tour
 
 - `flake.nix` - the entry point.
-  Wires up nixpkgs (stable, plus unstable for fast-moving CLIs), Home Manager, and herdr, and declares the `homeConfigurations.<user>` output.
-- `home-manager/home.nix` - all user-level config: packages, shell, prompt, GNOME settings, and the symlinks described below.
+  Wires up nixpkgs (stable, plus unstable for fast-moving CLIs), Home Manager, and herdr, and declares the `<user>-desktop` and `<user>-server` Home Manager configs.
+- `home-manager/common.nix` - config for every machine: CLI packages, shell, prompt, Neovim, agent configs, and the symlinks described below.
+- `home-manager/desktop.nix` - desktop-only additions: WezTerm, fonts, GNOME settings, and extensions.
 - `bootstrap.sh` - takes a fresh Ubuntu machine to an applied config.
   Run it once.
 - `rebuild.sh` - re-applies the config after the first switch.
@@ -116,8 +132,8 @@ Set them with `git config --global user.name` and `git config --global user.emai
 
 The files under `home/` are the real files.
 Editing them here is editing your live config, with no rebuild needed to see the change.
-`home.nix` uses `mkOutOfStoreSymlink` to point paths like `~/.config/nvim` straight at `home/.config/nvim` in this repo, so the two never drift out of sync.
-You only run `./rebuild.sh` when you change `home.nix` or `flake.nix`, like a package list or a GNOME setting.
+The Home Manager modules use `mkOutOfStoreSymlink` to point paths like `~/.config/nvim` straight at `home/.config/nvim` in this repo, so the two never drift out of sync.
+You only run `./rebuild.sh` when you change a `.nix` file, like a package list or a GNOME setting.
 
 `~/.config/herdr` is linked as a whole directory, so herdr's runtime files (logs, sockets, sessions) land in `home/.config/herdr` too.
 `.gitignore` ignores everything there except `config.toml`.

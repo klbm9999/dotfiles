@@ -33,7 +33,7 @@ else
 fi
 
 echo "==> Step 3: symlink this repo to ~/.dotfiles"
-# home.nix resolves its mkOutOfStoreSymlink paths through ~/.dotfiles, so this
+# common.nix and desktop.nix resolve their mkOutOfStoreSymlink paths through ~/.dotfiles, so this
 # has to exist before the first switch or those links will be broken.
 if [ "$(readlink -f ~/.dotfiles 2>/dev/null)" = "$DIR" ]; then
   echo "    ~/.dotfiles already points here, skipping"
@@ -63,23 +63,22 @@ else
 fi
 
 echo "==> Step 5: first home-manager switch"
-# home-manager isn't installed yet on a fresh machine, so run it from the flake
-# this once. --inputs-from resolves "home-manager" to the exact revision pinned
-# in this repo's flake.lock, so the tool always matches the modules it applies.
+# rebuild.sh picks the desktop or server profile, and on this first run uses the
+# home-manager revision pinned in flake.lock (home-manager isn't installed yet).
 # -b backup renames files already in the way (Ubuntu's default .bashrc and
 # .profile) to *.backup instead of failing.
-nix run --inputs-from "$DIR" home-manager -- \
-  switch -b backup --flake "$DIR#$REAL_USER"
+"$DIR/rebuild.sh" -b backup
 
-echo "==> Step 6: GPU drivers for Nix GUI apps (wezterm)"
-# targets.genericLinux installs this helper; it points /run/opengl-driver at
-# the Nix Mesa build. It needs root and is safe to re-run.
+echo "==> Step 6: GPU drivers for Nix GUI apps (wezterm, desktop profile only)"
+# desktop.nix enables targets.genericLinux.gpu, which installs this helper; it
+# points /run/opengl-driver at the Nix Mesa build. It needs root and is safe to
+# re-run. The server profile doesn't install it, so this step is skipped there.
 GPU_SETUP="$HOME/.nix-profile/bin/non-nixos-gpu-setup"
 if [ -x "$GPU_SETUP" ]; then
   sudo "$(readlink -f "$GPU_SETUP")"
 else
-  echo "    non-nixos-gpu-setup not found, skipping (is targets.genericLinux enabled?)"
+  echo "    non-nixos-gpu-setup not installed (server profile), skipping"
 fi
 
-echo "==> Done. Log out and back in so GNOME picks up new extensions and settings."
+echo "==> Done. On a desktop, log out and back in so GNOME picks up new extensions and settings."
 echo "    Use ./rebuild.sh for future changes."

@@ -20,14 +20,17 @@
         config.allowUnfree = true;
       };
       pkgs-unstable = import nixpkgs-unstable { inherit system; config.allowUnfree = true; };
+
+      mkHome = modules: home-manager.lib.homeManagerConfiguration {
+        inherit pkgs modules;
+        extraSpecialArgs = { inherit user herdr pkgs-unstable; };
+      };
     in
     {
-      homeConfigurations.${user} = home-manager.lib.homeManagerConfiguration {
-        inherit pkgs;
-        extraSpecialArgs = { inherit user herdr pkgs-unstable; };
-        modules = [
-          ./home-manager/home.nix
-        ];
+      # rebuild.sh picks one: desktop when GNOME is installed, server otherwise.
+      homeConfigurations = {
+        "${user}-desktop" = mkHome [ ./home-manager/common.nix ./home-manager/desktop.nix ];
+        "${user}-server" = mkHome [ ./home-manager/common.nix ];
       };
     };
 }
