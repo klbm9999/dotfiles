@@ -33,6 +33,9 @@ in
   home.stateVersion = "26.05";
   programs.home-manager.enable = true;
 
+  # Non-NixOS (Ubuntu) integration: app launchers, and GPU drivers for Nix GUI apps like wezterm.
+  targets.genericLinux.enable = true;
+
   home.packages = with pkgs; [
     wezterm # default terminal
     ripgrep # fast search
