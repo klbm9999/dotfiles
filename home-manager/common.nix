@@ -133,6 +133,18 @@ in
       || echo "warning: no-mistakes install failed" >&2
   '';
 
+  # ble.sh: Enter runs any complete command, like plain bash, so text typed
+  # quickly (agents, firstmate worker startup) never sticks in multi-line editing.
+  # https://github.com/akinomyoga/ble.sh/issues/639
+  home.file.".blerc".text = ''
+    function blerc/emacs-load-hook {
+      ble-bind -f 'C-m' 'accept-line syntax'
+      ble-bind -f 'RET' 'accept-line syntax'
+      return 0
+    }
+    blehook/eval-after-load keymap_emacs blerc/emacs-load-hook
+  '';
+
   home.file.".config/nvim".source = config.lib.file.mkOutOfStoreSymlink "${dotfiles}/home/.config/nvim";
   home.file.".config/herdr".source = config.lib.file.mkOutOfStoreSymlink "${dotfiles}/home/.config/herdr";
   home.file.".claude/settings.json".source = config.lib.file.mkOutOfStoreSymlink "${dotfiles}/home/.claude/settings.json";
