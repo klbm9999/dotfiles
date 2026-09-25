@@ -9,9 +9,14 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
     herdr.url = "github:herdrdev/herdr";
+    treehouse = {
+      url = "github:kunchenguid/treehouse";
+      # treehouse needs Go >= 1.25.5
+      inputs.nixpkgs.follows = "nixpkgs-unstable";
+    };
   };
 
-  outputs = { nixpkgs, nixpkgs-unstable, home-manager, herdr, ... }:
+  outputs = { nixpkgs, nixpkgs-unstable, home-manager, herdr, treehouse, ... }:
     let
       system = "x86_64-linux";
       user = "bhanu";
@@ -23,7 +28,7 @@
 
       mkHome = modules: home-manager.lib.homeManagerConfiguration {
         inherit pkgs modules;
-        extraSpecialArgs = { inherit user herdr pkgs-unstable; };
+        extraSpecialArgs = { inherit user herdr treehouse pkgs-unstable; };
       };
     in
     {

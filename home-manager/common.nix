@@ -1,9 +1,15 @@
 # Everything that works on any machine, including headless servers over SSH:
 # shell, CLI tools, editor, and agent configs.
-{ config, lib, pkgs, pkgs-unstable, user, herdr, ... }:
+{ config, lib, pkgs, pkgs-unstable, user, herdr, treehouse, ... }:
 
 let
   dotfiles = "${config.home.homeDirectory}/.dotfiles";
+  npmPrefix = config.home.sessionVariables.NPM_CONFIG_PREFIX;
+
+  # axi CLIs, each installed from npm together with its same-named agent skill.
+  axiTools = [ "tasks-axi" "gh-axi" "quota-axi" ];
+  # Other global npm CLIs. acpx is the ACP bridge no-mistakes needs to run Cursor.
+  npmTools = axiTools ++ [ "acpx" ];
 in
 
 {
@@ -25,6 +31,8 @@ in
     neovim
     herdr.packages.${pkgs.stdenv.hostPlatform.system}.default
     pkgs-unstable.cursor-cli
+    nodejs_24
+    treehouse.packages.${pkgs.stdenv.hostPlatform.system}.default
   ];
 
   programs.bash = {
@@ -81,7 +89,7 @@ in
     package = pkgs-unstable.claude-code;
   };
 
-  home.sessionPath = ["$HOME/.local/bin"];
+  home.sessionPath = ["$HOME/.local/bin" "$HOME/.npm-global/bin"];
   programs.starship = {
     enable = true;
     settings = {
@@ -95,7 +103,35 @@ in
     };
   };
   programs.fzf.enable = true;
-  home.sessionVariables.EDITOR = "nvim";
+  home.sessionVariables = {
+    EDITOR = "nvim";
+    NPM_CONFIG_PREFIX = "$HOME/.npm-global";
+    CLAUDE_CODE_AUTO_COMPACT_WINDOW=500000;
+  };
+
+  # Tools that live outside the Nix store, installed on switch only when missing.
+  # Activation does not read sessionVariables, so the npm prefix is exported here too.
+  # Update them with `npm update -g`, `npx skills update -g` and `no-mistakes update`.
+  home.activation.npmTools = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+    export NPM_CONFIG_PREFIX="${npmPrefix}"
+    export PATH="$NPM_CONFIG_PREFIX/bin:${lib.makeBinPath [ pkgs.nodejs_24 pkgs.git ]}:$PATH"
+    for t in ${lib.escapeShellArgs npmTools}; do
+      [ -x "$NPM_CONFIG_PREFIX/bin/$t" ] || run npm install -g "$t" || echo "warning: npm install $t failed" >&2
+    done
+    for t in ${lib.escapeShellArgs axiTools}; do
+      [ -e "$HOME/.agents/skills/$t" ] \
+        || run npx -y skills add "kunchenguid/$t" -g -y -s "$t" -a claude-code cursor \
+        || echo "warning: skill $t failed" >&2
+    done
+  '';
+
+  # no-mistakes updates itself in place, so it stays outside the Nix store.
+  home.activation.noMistakes = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+    export PATH="${lib.makeBinPath [ pkgs.curl pkgs.gnutar pkgs.gzip pkgs.coreutils ]}:$PATH"
+    [ -x "$HOME/.no-mistakes/bin/no-mistakes" ] \
+      || run sh -c 'curl -fsSL https://raw.githubusercontent.com/kunchenguid/no-mistakes/main/docs/install.sh | sh' \
+      || echo "warning: no-mistakes install failed" >&2
+  '';
 
   home.file.".config/nvim".source = config.lib.file.mkOutOfStoreSymlink "${dotfiles}/home/.config/nvim";
   home.file.".config/herdr".source = config.lib.file.mkOutOfStoreSymlink "${dotfiles}/home/.config/herdr";

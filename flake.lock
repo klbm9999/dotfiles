@@ -1,5 +1,21 @@
 {
   "nodes": {
+    "flake-compat": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1767039857,
+        "narHash": "sha256-vNpUSpF5Nuw8xvDLj2KCwwksIbjua2LZCqhV1LNRDns=",
+        "owner": "edolstra",
+        "repo": "flake-compat",
+        "rev": "5edf11c44bc78a0d334f6334cdaf7d60d732daab",
+        "type": "github"
+      },
+      "original": {
+        "owner": "edolstra",
+        "repo": "flake-compat",
+        "type": "github"
+      }
+    },
     "herdr": {
       "inputs": {
         "nixpkgs": "nixpkgs",
@@ -93,7 +109,8 @@
         "herdr": "herdr",
         "home-manager": "home-manager",
         "nixpkgs": "nixpkgs_2",
-        "nixpkgs-unstable": "nixpkgs-unstable"
+        "nixpkgs-unstable": "nixpkgs-unstable",
+        "treehouse": "treehouse"
       }
     },
     "rust-overlay": {
@@ -114,6 +131,27 @@
       "original": {
         "owner": "oxalica",
         "repo": "rust-overlay",
+        "type": "github"
+      }
+    },
+    "treehouse": {
+      "inputs": {
+        "flake-compat": "flake-compat",
+        "nixpkgs": [
+          "nixpkgs-unstable"
+        ]
+      },
+      "locked": {
+        "lastModified": 1790274824,
+        "narHash": "sha256-UyZLkl9jc39NRFEHwHbNZ+ClK3F9GVx1REIoKEGyHrs=",
+        "owner": "kunchenguid",
+        "repo": "treehouse",
+        "rev": "e4f59d10b872eb8d191ef16ccfb073b505a262e2",
+        "type": "github"
+      },
+      "original": {
+        "owner": "kunchenguid",
+        "repo": "treehouse",
         "type": "github"
       }
     }
