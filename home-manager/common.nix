@@ -107,6 +107,7 @@ in
     EDITOR = "nvim";
     NPM_CONFIG_PREFIX = "$HOME/.npm-global";
     CLAUDE_CODE_AUTO_COMPACT_WINDOW=500000;
+    CLAUDE_CODE_ENABLE_FUNCTION_HOOKS=1;
   };
 
   # Tools that live outside the Nix store, installed on switch only when missing.

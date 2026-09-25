@@ -12,3 +12,13 @@ close_tab = "prefix+ampersand"
 workspace_picker = "prefix+w"
 goto = "prefix+g"
 copy_mode = "prefix+y"
+
+[ui]
+status_indicators = "symbols"
+
+[theme]
+name = "rose-pine"
+auto_switch = false
+
+[ui.sound]
+enabled = false
