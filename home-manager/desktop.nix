@@ -9,6 +9,16 @@ in
 {
   # GPU drivers for Nix GUI apps like wezterm (common.nix leaves them off).
   targets.genericLinux.gpu.enable = true;
+  # This laptop's desktop runs on the NVIDIA card (prime-select: nvidia), so Nix
+  # apps need NVIDIA's own libraries, not just Mesa. The version must match the
+  # host driver exactly (cat /proc/driver/nvidia/version); update both lines
+  # whenever Ubuntu upgrades the NVIDIA driver, or wezterm will fail to start.
+  # New hash: nix store prefetch-file https://download.nvidia.com/XFree86/Linux-x86_64/<ver>/NVIDIA-Linux-x86_64-<ver>.run
+  targets.genericLinux.gpu.nvidia = {
+    enable = true;
+    version = "550.144.03";
+    sha256 = "sha256-akg44s2ybkwOBzZ6wNO895nVa1KG9o+iAb49PduIqsQ=";
+  };
 
   home.packages = with pkgs; [
     wezterm # default terminal

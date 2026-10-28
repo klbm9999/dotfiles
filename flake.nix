@@ -19,10 +19,11 @@
   outputs = { nixpkgs, nixpkgs-unstable, home-manager, herdr, treehouse, ... }:
     let
       system = "x86_64-linux";
-      user = "bhanu";
+      user = "klbm9999";
       pkgs = import nixpkgs {
         inherit system;
         config.allowUnfree = true;
+        config.nvidia.acceptLicense = true; # needed for targets.genericLinux.gpu.nvidia
       };
       pkgs-unstable = import nixpkgs-unstable { inherit system; config.allowUnfree = true; };
 
